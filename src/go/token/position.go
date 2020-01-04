@@ -16,14 +16,15 @@ import (
 // Position describes an arbitrary source position
 // including the file, line, and column location.
 // A Position is valid if the line number is > 0.
-//
+// 标记一个二进制文件源码位置，包括文件，行，列位置；一个位置是合法当行数>0
 type Position struct {
 	Filename string // filename, if any
-	Offset   int    // offset, starting at 0
-	Line     int    // line number, starting at 1
-	Column   int    // column number, starting at 1 (byte count)
+	Offset   int    // offset, starting at 0       文件内容起始位置
+	Line     int    // line number, starting at 1   行位置
+	Column   int    // column number, starting at 1 (byte count) 列位置
 }
 
+// 判断Position是否合法
 // IsValid reports whether the position is valid.
 func (pos *Position) IsValid() bool { return pos.Line > 0 }
 
@@ -34,6 +35,7 @@ func (pos *Position) IsValid() bool { return pos.Line > 0 }
 //	file                invalid position with file name
 //	-                   invalid position without file name
 //
+// 返回位置的字符串格式：[filename:]line:column
 func (pos Position) String() string {
 	s := pos.Filename
 	if pos.IsValid() {

@@ -13,7 +13,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 )
-
+// Go语法树： Expressions, type, statement, declaration nodes
 // ----------------------------------------------------------------------------
 // Interfaces
 //
@@ -31,24 +31,28 @@ import (
 // That position information is needed to properly position comments
 // when printing the construct.
 
+// 所有节点的接口
 // All node types implement the Node interface.
 type Node interface {
-	Pos() token.Pos // position of first character belonging to the node
-	End() token.Pos // position of first character immediately after the node
+	Pos() token.Pos // position of first character belonging to the node    节点开始的位置
+	End() token.Pos // position of first character immediately after the node  节点结束的位置
 }
 
+// 表达式接口
 // All expression nodes implement the Expr interface.
 type Expr interface {
 	Node
 	exprNode()
 }
 
+// 语句接口
 // All statement nodes implement the Stmt interface.
 type Stmt interface {
 	Node
 	stmtNode()
 }
 
+// 声明接口
 // All declaration nodes implement the Decl interface.
 type Decl interface {
 	Node
@@ -57,28 +61,29 @@ type Decl interface {
 
 // ----------------------------------------------------------------------------
 // Comments
-
+// 注释结构对象
 // A Comment node represents a single //-style or /*-style comment.
 type Comment struct {
-	Slash token.Pos // position of "/" starting the comment
-	Text  string    // comment text (excluding '\n' for //-style comments)
+	Slash token.Pos // position of "/" starting the comment   斜线开始位置
+	Text  string    // comment text (excluding '\n' for //-style comments)  // 文本
 }
 
-func (c *Comment) Pos() token.Pos { return c.Slash }
-func (c *Comment) End() token.Pos { return token.Pos(int(c.Slash) + len(c.Text)) }
+func (c *Comment) Pos() token.Pos { return c.Slash }  // 开始位置
+func (c *Comment) End() token.Pos { return token.Pos(int(c.Slash) + len(c.Text)) } // 结束位置
 
 // A CommentGroup represents a sequence of comments
 // with no other tokens and no empty lines between.
-//
+// 注释组，没有空行或其他token在里面
 type CommentGroup struct {
 	List []*Comment // len(List) > 0
 }
 
-func (g *CommentGroup) Pos() token.Pos { return g.List[0].Pos() }
-func (g *CommentGroup) End() token.Pos { return g.List[len(g.List)-1].End() }
+func (g *CommentGroup) Pos() token.Pos { return g.List[0].Pos() }  // 开始位置
+func (g *CommentGroup) End() token.Pos { return g.List[len(g.List)-1].End() }  // 结束位置
 
-func isWhitespace(ch byte) bool { return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' }
+func isWhitespace(ch byte) bool { return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r' } // 判断空格
 
+// 去掉末尾空白
 func stripTrailingWhitespace(s string) string {
 	i := len(s)
 	for i > 0 && isWhitespace(s[i-1]) {
@@ -93,7 +98,7 @@ func stripTrailingWhitespace(s string) string {
 // reduced to one, and trailing space on lines is trimmed. Unless the result
 // is empty, it is newline-terminated.
 //
-func (g *CommentGroup) Text() string {
+func (g *CommentGroup) Text() string { // 返回注释文本
 	if g == nil {
 		return ""
 	}
@@ -154,12 +159,13 @@ func (g *CommentGroup) Text() string {
 // a method list in an interface type, or a parameter/result declaration
 // in a signature.
 //
+// struct 结构体内的字段
 type Field struct {
-	Doc     *CommentGroup // associated documentation; or nil
+	Doc     *CommentGroup // associated documentation; or nil   文档关联
 	Names   []*Ident      // field/method/parameter names; or nil if anonymous field
 	Type    Expr          // field/method/parameter type
 	Tag     *BasicLit     // field tag; or nil
-	Comment *CommentGroup // line comments; or nil
+	Comment *CommentGroup // line comments; or nil   // 行注释
 }
 
 func (f *Field) Pos() token.Pos {
@@ -235,21 +241,23 @@ type (
 	}
 
 	// An Ident node represents an identifier.
+	// 标志
 	Ident struct {
-		NamePos token.Pos // identifier position
-		Name    string    // identifier name
-		Obj     *Object   // denoted object; or nil
+		NamePos token.Pos // identifier position 位置
+		Name    string    // identifier name  名称
+		Obj     *Object   // denoted object; or nil 对象
 	}
 
 	// An Ellipsis node stands for the "..." type in a
 	// parameter list or the "..." length in an array type.
-	//
+	// 数组展开
 	Ellipsis struct {
 		Ellipsis token.Pos // position of "..."
 		Elt      Expr      // ellipsis element type (parameter lists only); or nil
 	}
 
 	// A BasicLit node represents a literal of basic type.
+	// 基本数据类型
 	BasicLit struct {
 		ValuePos token.Pos   // literal position
 		Kind     token.Token // token.INT, token.FLOAT, token.IMAG, token.CHAR, or token.STRING
@@ -257,12 +265,14 @@ type (
 	}
 
 	// A FuncLit node represents a function literal.
+	// 函数
 	FuncLit struct {
 		Type *FuncType  // function type
 		Body *BlockStmt // function body
 	}
 
 	// A CompositeLit node represents a composite literal.
+	// 花括号
 	CompositeLit struct {
 		Type   Expr      // literal type; or nil
 		Lbrace token.Pos // position of "{"
@@ -271,6 +281,7 @@ type (
 	}
 
 	// A ParenExpr node represents a parenthesized expression.
+	// 括号
 	ParenExpr struct {
 		Lparen token.Pos // position of "("
 		X      Expr      // parenthesized expression
@@ -278,12 +289,14 @@ type (
 	}
 
 	// A SelectorExpr node represents an expression followed by a selector.
+	// select 表达式
 	SelectorExpr struct {
 		X   Expr   // expression
 		Sel *Ident // field selector
 	}
 
 	// An IndexExpr node represents an expression followed by an index.
+	// 下标
 	IndexExpr struct {
 		X      Expr      // expression
 		Lbrack token.Pos // position of "["
@@ -292,6 +305,7 @@ type (
 	}
 
 	// An SliceExpr node represents an expression followed by slice indices.
+	// 切片
 	SliceExpr struct {
 		X      Expr      // expression
 		Lbrack token.Pos // position of "["
@@ -304,7 +318,7 @@ type (
 
 	// A TypeAssertExpr node represents an expression followed by a
 	// type assertion.
-	//
+	// 类型断言
 	TypeAssertExpr struct {
 		X      Expr      // expression
 		Lparen token.Pos // position of "("
@@ -313,6 +327,7 @@ type (
 	}
 
 	// A CallExpr node represents an expression followed by an argument list.
+	// 调用
 	CallExpr struct {
 		Fun      Expr      // function expression
 		Lparen   token.Pos // position of "("
@@ -323,7 +338,7 @@ type (
 
 	// A StarExpr node represents an expression of the form "*" Expression.
 	// Semantically it could be a unary "*" expression, or a pointer type.
-	//
+	// 星号表达式
 	StarExpr struct {
 		Star token.Pos // position of "*"
 		X    Expr      // operand
@@ -331,7 +346,7 @@ type (
 
 	// A UnaryExpr node represents a unary expression.
 	// Unary "*" expressions are represented via StarExpr nodes.
-	//
+	// 如 i++
 	UnaryExpr struct {
 		OpPos token.Pos   // position of Op
 		Op    token.Token // operator
@@ -348,7 +363,7 @@ type (
 
 	// A KeyValueExpr node represents (key : value) pairs
 	// in composite literals.
-	//
+	//  键值对
 	KeyValueExpr struct {
 		Key   Expr
 		Colon token.Pos // position of ":"

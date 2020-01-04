@@ -73,9 +73,10 @@ func (s *Scope) String() string {
 //	Pkg     *Scope            package scope
 //	Con     int               iota for the respective declaration
 //
+// 对象: 包，常量，类型，变量，函数，标签
 type Object struct {
-	Kind ObjKind
-	Name string      // declared name
+	Kind ObjKind                    // 类型
+	Name string      // declared name // 名称
 	Decl interface{} // corresponding Field, XxxSpec, FuncDecl, LabeledStmt, AssignStmt, Scope; or nil
 	Data interface{} // object-specific data; or nil
 	Type interface{} // placeholder for type information; may be nil
@@ -89,7 +90,7 @@ func NewObj(kind ObjKind, name string) *Object {
 // Pos computes the source position of the declaration of an object name.
 // The result may be an invalid position if it cannot be computed
 // (obj.Decl may be nil or not correct).
-func (obj *Object) Pos() token.Pos {
+func (obj *Object) Pos() token.Pos { // 计算位置
 	name := obj.Name
 	switch d := obj.Decl.(type) {
 	case *Field:
@@ -134,6 +135,7 @@ func (obj *Object) Pos() token.Pos {
 }
 
 // ObjKind describes what an object represents.
+// 类型
 type ObjKind int
 
 // The list of possible Object kinds.
@@ -147,6 +149,7 @@ const (
 	Lbl                // label
 )
 
+// 类型名称
 var objKindStrings = [...]string{
 	Bad: "bad",
 	Pkg: "package",
