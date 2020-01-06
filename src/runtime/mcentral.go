@@ -16,9 +16,10 @@ import "runtime/internal/atomic"
 
 // Central list of free objects of a given size.
 //
+// mcantral 内存
 //go:notinheap
 type mcentral struct {
-	lock      mutex
+	lock      mutex  // 锁
 	spanclass spanClass
 	nonempty  mSpanList // list of spans with a free object, ie a nonempty free list
 	empty     mSpanList // list of spans with no free objects (or cached in an mcache)
@@ -29,6 +30,7 @@ type mcentral struct {
 	nmalloc uint64
 }
 
+// 按规格初始化
 // Initialize a single central free list.
 func (c *mcentral) init(spc spanClass) {
 	c.spanclass = spc

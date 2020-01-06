@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// 内存申请
 // Memory allocator.
 //
 // This was originally based on tcmalloc, but has diverged quite a bit.
@@ -19,10 +20,11 @@
 //	fixalloc: a free-list allocator for fixed-size off-heap objects,
 //		used to manage storage used by the allocator.
 //	mheap: the malloc heap, managed at page (8192-byte) granularity.
-//	mspan: a run of pages managed by the mheap.
-//	mcentral: collects all spans of a given size class.
-//	mcache: a per-P cache of mspans with free space.
-//	mstats: allocation statistics.
+
+//	mspan: a run of pages managed by the mheap.   堆内存
+//	mcentral: collects all spans of a given size class.  所有的可分配的内存
+//	mcache: a per-P cache of mspans with free space. 空闲缓存
+//	mstats: allocation statistics.  统计申请数据
 //
 // Allocating a small object proceeds up a hierarchy of caches:
 //

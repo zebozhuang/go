@@ -6,6 +6,7 @@ package runtime
 
 import "unsafe"
 
+// P线程
 // Per-thread (in Go, per-P) cache for small objects.
 // No locking needed because it is per-thread (per-P).
 //
@@ -34,9 +35,9 @@ type mcache struct {
 
 	// The rest is not accessed on every malloc.
 
-	alloc [numSpanClasses]*mspan // spans to allocate from, indexed by spanClass
+	alloc [numSpanClasses]*mspan // spans to allocate from, indexed by spanClass, 分配内存
 
-	stackcache [_NumStackOrders]stackfreelist
+	stackcache [_NumStackOrders]stackfreelist    // 栈缓存
 
 	// Local allocator stats, flushed during GC.
 	local_nlookup    uintptr                  // number of pointer lookups
@@ -85,6 +86,7 @@ func allocmcache() *mcache {
 	return c
 }
 
+// 释放mcache
 func freemcache(c *mcache) {
 	systemstack(func() {
 		c.releaseAll()
@@ -105,7 +107,7 @@ func freemcache(c *mcache) {
 // Gets a span that has a free object in it and assigns it
 // to be the cached span for the given sizeclass. Returns this span.
 func (c *mcache) refill(spc spanClass) *mspan {
-	_g_ := getg()
+	_g_ := getg()  // 返回当前的g
 
 	_g_.m.locks++
 	// Return the current cached span to the central lists.
@@ -134,6 +136,7 @@ func (c *mcache) refill(spc spanClass) *mspan {
 	return s
 }
 
+// 释放全部
 func (c *mcache) releaseAll() {
 	for i := range c.alloc {
 		s := c.alloc[i]
