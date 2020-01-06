@@ -184,12 +184,12 @@ func (f *Field) End() token.Pos {
 
 // A FieldList represents a list of Fields, enclosed by parentheses or braces.
 type FieldList struct {
-	Opening token.Pos // position of opening parenthesis/brace, if any
+	Opening token.Pos // position of opening parenthesis/brace, if any  左括号
 	List    []*Field  // field list; or nil
-	Closing token.Pos // position of closing parenthesis/brace, if any
+	Closing token.Pos // position of closing parenthesis/brace, if any  右括号
 }
 
-func (f *FieldList) Pos() token.Pos {
+func (f *FieldList) Pos() token.Pos { // 开始位置
 	if f.Opening.IsValid() {
 		return f.Opening
 	}
@@ -201,7 +201,7 @@ func (f *FieldList) Pos() token.Pos {
 	return token.NoPos
 }
 
-func (f *FieldList) End() token.Pos {
+func (f *FieldList) End() token.Pos { // 结束位置
 	if f.Closing.IsValid() {
 		return f.Closing + 1
 	}
@@ -214,7 +214,7 @@ func (f *FieldList) End() token.Pos {
 }
 
 // NumFields returns the number of (named and anonymous fields) in a FieldList.
-func (f *FieldList) NumFields() int {
+func (f *FieldList) NumFields() int { // 字段数量
 	n := 0
 	if f != nil {
 		for _, g := range f.List {
@@ -387,6 +387,7 @@ const (
 //
 type (
 	// An ArrayType node represents an array or slice type.
+	// 数组类型
 	ArrayType struct {
 		Lbrack token.Pos // position of "["
 		Len    Expr      // Ellipsis node for [...]T array types, nil for slice types
@@ -394,6 +395,7 @@ type (
 	}
 
 	// A StructType node represents a struct type.
+	// 结构类型
 	StructType struct {
 		Struct     token.Pos  // position of "struct" keyword
 		Fields     *FieldList // list of field declarations
@@ -403,6 +405,7 @@ type (
 	// Pointer types are represented via StarExpr nodes.
 
 	// A FuncType node represents a function type.
+	// 函数类型
 	FuncType struct {
 		Func    token.Pos  // position of "func" keyword (token.NoPos if there is no "func")
 		Params  *FieldList // (incoming) parameters; non-nil
@@ -410,6 +413,7 @@ type (
 	}
 
 	// An InterfaceType node represents an interface type.
+	// 接口类型
 	InterfaceType struct {
 		Interface  token.Pos  // position of "interface" keyword
 		Methods    *FieldList // list of methods
@@ -417,6 +421,7 @@ type (
 	}
 
 	// A MapType node represents a map type.
+	// map类型
 	MapType struct {
 		Map   token.Pos // position of "map" keyword
 		Key   Expr
@@ -424,6 +429,7 @@ type (
 	}
 
 	// A ChanType node represents a channel type.
+	// channel类型
 	ChanType struct {
 		Begin token.Pos // position of "chan" keyword or "<-" (whichever comes first)
 		Arrow token.Pos // position of "<-" (token.NoPos if there is no "<-")
@@ -571,6 +577,7 @@ type (
 	}
 
 	// A DeclStmt node represents a declaration in a statement list.
+	// 声明
 	DeclStmt struct {
 		Decl Decl // *GenDecl with CONST, TYPE, or VAR token
 	}
@@ -578,13 +585,14 @@ type (
 	// An EmptyStmt node represents an empty statement.
 	// The "position" of the empty statement is the position
 	// of the immediately following (explicit or implicit) semicolon.
-	//
+	// 空语句
 	EmptyStmt struct {
 		Semicolon token.Pos // position of following ";"
 		Implicit  bool      // if set, ";" was omitted in the source
 	}
 
 	// A LabeledStmt node represents a labeled statement.
+	// 标签语句
 	LabeledStmt struct {
 		Label *Ident
 		Colon token.Pos // position of ":"
@@ -593,12 +601,13 @@ type (
 
 	// An ExprStmt node represents a (stand-alone) expression
 	// in a statement list.
-	//
+	// 表达式
 	ExprStmt struct {
 		X Expr // expression
 	}
 
 	// A SendStmt node represents a send statement.
+	// chanenl 发送
 	SendStmt struct {
 		Chan  Expr
 		Arrow token.Pos // position of "<-"
@@ -614,7 +623,7 @@ type (
 
 	// An AssignStmt node represents an assignment or
 	// a short variable declaration.
-	//
+	// 赋值
 	AssignStmt struct {
 		Lhs    []Expr
 		TokPos token.Pos   // position of Tok
@@ -623,18 +632,21 @@ type (
 	}
 
 	// A GoStmt node represents a go statement.
+	// go表达式
 	GoStmt struct {
 		Go   token.Pos // position of "go" keyword
 		Call *CallExpr
 	}
 
 	// A DeferStmt node represents a defer statement.
+	// defer语句
 	DeferStmt struct {
 		Defer token.Pos // position of "defer" keyword
 		Call  *CallExpr
 	}
 
 	// A ReturnStmt node represents a return statement.
+	// 返回语句
 	ReturnStmt struct {
 		Return  token.Pos // position of "return" keyword
 		Results []Expr    // result expressions; or nil
@@ -642,7 +654,7 @@ type (
 
 	// A BranchStmt node represents a break, continue, goto,
 	// or fallthrough statement.
-	//
+	// break, continue, goto, fallthrought 语句
 	BranchStmt struct {
 		TokPos token.Pos   // position of Tok
 		Tok    token.Token // keyword token (BREAK, CONTINUE, GOTO, FALLTHROUGH)
@@ -650,6 +662,7 @@ type (
 	}
 
 	// A BlockStmt node represents a braced statement list.
+	// 代码块语句
 	BlockStmt struct {
 		Lbrace token.Pos // position of "{"
 		List   []Stmt
@@ -657,6 +670,7 @@ type (
 	}
 
 	// An IfStmt node represents an if statement.
+	// if语句
 	IfStmt struct {
 		If   token.Pos // position of "if" keyword
 		Init Stmt      // initialization statement; or nil
@@ -666,6 +680,7 @@ type (
 	}
 
 	// A CaseClause represents a case of an expression or type switch statement.
+	// case语句
 	CaseClause struct {
 		Case  token.Pos // position of "case" or "default" keyword
 		List  []Expr    // list of expressions or types; nil means default case
@@ -674,6 +689,7 @@ type (
 	}
 
 	// A SwitchStmt node represents an expression switch statement.
+	// switch语句
 	SwitchStmt struct {
 		Switch token.Pos  // position of "switch" keyword
 		Init   Stmt       // initialization statement; or nil
@@ -682,6 +698,7 @@ type (
 	}
 
 	// An TypeSwitchStmt node represents a type switch statement.
+	// type语句
 	TypeSwitchStmt struct {
 		Switch token.Pos  // position of "switch" keyword
 		Init   Stmt       // initialization statement; or nil
@@ -698,12 +715,14 @@ type (
 	}
 
 	// An SelectStmt node represents a select statement.
+	// select语句
 	SelectStmt struct {
 		Select token.Pos  // position of "select" keyword
 		Body   *BlockStmt // CommClauses only
 	}
 
 	// A ForStmt represents a for statement.
+	// for语句
 	ForStmt struct {
 		For  token.Pos // position of "for" keyword
 		Init Stmt      // initialization statement; or nil
@@ -713,6 +732,7 @@ type (
 	}
 
 	// A RangeStmt represents a for statement with a range clause.
+	// range语句
 	RangeStmt struct {
 		For        token.Pos   // position of "for" keyword
 		Key, Value Expr        // Key, Value may be nil
@@ -840,6 +860,7 @@ type (
 	}
 
 	// An ImportSpec node represents a single package import.
+	// import Spec
 	ImportSpec struct {
 		Doc     *CommentGroup // associated documentation; or nil
 		Name    *Ident        // local package name (including "."); or nil
