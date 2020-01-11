@@ -14,9 +14,10 @@ import (
 
 // A Buffer is a variable-sized buffer of bytes with Read and Write methods.
 // The zero value for Buffer is an empty buffer ready to use.
+// Buffer对象
 type Buffer struct {
 	buf      []byte // contents are the bytes buf[off : len(buf)]
-	off      int    // read at &buf[off], write at &buf[len(buf)]
+	off      int    // read at &buf[off], write at &buf[len(buf)]  读写开始位置
 	lastRead readOp // last read operation, so that Unread* can work correctly.
 	// FIXME: lastRead can fit in a single byte
 
@@ -49,11 +50,11 @@ var ErrTooLarge = errors.New("bytes.Buffer: too large")
 // only until the next call to a method like Read, Write, Reset, or Truncate).
 // The slice aliases the buffer content at least until the next buffer modification,
 // so immediate changes to the slice will affect the result of future reads.
-func (b *Buffer) Bytes() []byte { return b.buf[b.off:] }
+func (b *Buffer) Bytes() []byte { return b.buf[b.off:] } // 返回字节类型
 
 // String returns the contents of the unread portion of the buffer
 // as a string. If the Buffer is a nil pointer, it returns "<nil>".
-func (b *Buffer) String() string {
+func (b *Buffer) String() string {  // 返回字符串类型
 	if b == nil {
 		// Special case, useful in debugging.
 		return "<nil>"
@@ -63,11 +64,11 @@ func (b *Buffer) String() string {
 
 // Len returns the number of bytes of the unread portion of the buffer;
 // b.Len() == len(b.Bytes()).
-func (b *Buffer) Len() int { return len(b.buf) - b.off }
+func (b *Buffer) Len() int { return len(b.buf) - b.off } // 返回长度（当前位置到结束位置）
 
 // Cap returns the capacity of the buffer's underlying byte slice, that is, the
 // total space allocated for the buffer's data.
-func (b *Buffer) Cap() int { return cap(b.buf) }
+func (b *Buffer) Cap() int { return cap(b.buf) }  // 整个长度
 
 // Truncate discards all but the first n unread bytes from the buffer
 // but continues to use the same allocated storage.
@@ -87,7 +88,7 @@ func (b *Buffer) Truncate(n int) {
 // Reset resets the buffer to be empty,
 // but it retains the underlying storage for use by future writes.
 // Reset is the same as Truncate(0).
-func (b *Buffer) Reset() {
+func (b *Buffer) Reset() { // 重置
 	b.buf = b.buf[:0]
 	b.off = 0
 	b.lastRead = opInvalid
