@@ -27,13 +27,14 @@ import (
 )
 
 // The parser structure holds the parser's internal state.
+// 解析一个文件
 type parser struct {
-	file    *token.File
-	errors  scanner.ErrorList
-	scanner scanner.Scanner
+	file    *token.File       // 文件token
+	errors  scanner.ErrorList // 错误
+	scanner scanner.Scanner   // 扫描
 
 	// Tracing/debugging
-	mode   Mode // parsing mode
+	mode   Mode // parsing mode // 解析模式：追踪/DEBUG
 	trace  bool // == (mode & Trace != 0)
 	indent int  // indentation used for tracing output
 
@@ -43,9 +44,9 @@ type parser struct {
 	lineComment *ast.CommentGroup // last line comment
 
 	// Next token
-	pos token.Pos   // token position
-	tok token.Token // one token look-ahead
-	lit string      // token literal
+	pos token.Pos   // token position   // 下个token位置
+	tok token.Token // one token look-ahead // 前面的token
+	lit string      // token literal   // token的文字
 
 	// Error recovery
 	// (used to limit the number of calls to syncXXX functions

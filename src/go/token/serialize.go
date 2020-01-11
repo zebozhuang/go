@@ -4,6 +4,7 @@
 
 package token
 
+// 序列化文件
 type serializedFile struct {
 	// fields correspond 1:1 to fields with same (lower-case) name in File
 	Name  string
@@ -13,10 +14,12 @@ type serializedFile struct {
 	Infos []lineInfo
 }
 
+// 序列化文件集
 type serializedFileSet struct {
 	Base  int
 	Files []serializedFile
 }
+
 
 // Read calls decode to deserialize a file set into s; s must not be nil.
 func (s *FileSet) Read(decode func(interface{}) error) error {

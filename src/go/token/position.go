@@ -53,23 +53,24 @@ func (pos Position) String() string {
 // Pos is a compact encoding of a source position within a file set.
 // It can be converted into a Position for a more convenient, but much
 // larger, representation.
-//
+// Pos是个源码文件集的位置压缩编码. 可以转化为更方便的Position对象，也更大，中间表达式
 // The Pos value for a given file is a number in the range [base, base+size],
 // where base and size are specified when adding the file to the file set via
 // AddFile.
-//
+// Pos对象在给定的文件范围是[base, base+size]，base 和 size 是特定指定的当通过调用AddFile添加文件集
 // To create the Pos value for a specific source offset (measured in bytes),
 // first add the respective file to the current file set using FileSet.AddFile
 // and then call File.Pos(offset) for that file. Given a Pos value p
 // for a specific file set fset, the corresponding Position value is
 // obtained by calling fset.Position(p).
-//
+// 创建一个Pos值给一个特定的距离位置，首先调用FileSet.AddFile，然后调用File.Pos(offset)
 // Pos values can be compared directly with the usual comparison operators:
 // If two Pos values p and q are in the same file, comparing p and q is
 // equivalent to comparing the respective source file offsets. If p and q
 // are in different files, p < q is true if the file implied by p was added
 // to the respective file set before the file implied by q.
 //
+// Pos 对象
 type Pos int
 
 // The zero value for Pos is NoPos; there is no file and line information
@@ -77,6 +78,7 @@ type Pos int
 // smaller than any other Pos value. The corresponding Position value
 // for NoPos is the zero value for Position.
 //
+// 没有Pos值
 const NoPos Pos = 0
 
 // IsValid reports whether the position is valid.
@@ -89,35 +91,39 @@ func (p Pos) IsValid() bool {
 
 // A File is a handle for a file belonging to a FileSet.
 // A File has a name, size, and line offset table.
-//
+// 文件对象
 type File struct {
-	set  *FileSet
-	name string // file name as provided to AddFile
-	base int    // Pos value range for this file is [base...base+size]
-	size int    // file size as provided to AddFile
+	set  *FileSet // 文件集?
+	name string // file name as provided to AddFile  文件名字
+	base int    // Pos value range for this file is [base...base+size]  如何计算?
+	size int    // file size as provided to AddFile  // 文件大小
 
 	// lines and infos are protected by mutex
-	mutex sync.Mutex
-	lines []int // lines contains the offset of the first character for each line (the first entry is always 0)
-	infos []lineInfo
+	mutex sync.Mutex // 锁
+	lines []int // lines contains the offset of the first character for each line (the first entry is always 0), 每行第一个字符位置
+	infos []lineInfo  // ?
 }
 
 // Name returns the file name of file f as registered with AddFile.
+// 文件名
 func (f *File) Name() string {
 	return f.name
 }
 
 // Base returns the base offset of file f as registered with AddFile.
+// 通过Addfile计算得到的base
 func (f *File) Base() int {
 	return f.base
 }
 
 // Size returns the size of file f as registered with AddFile.
+// 返回文件大小
 func (f *File) Size() int {
 	return f.size
 }
 
 // LineCount returns the number of lines in file f.
+// 文件行数
 func (f *File) LineCount() int {
 	f.mutex.Lock()
 	n := len(f.lines)
@@ -128,7 +134,7 @@ func (f *File) LineCount() int {
 // AddLine adds the line offset for a new line.
 // The line offset must be larger than the offset for the previous line
 // and smaller than the file size; otherwise the line offset is ignored.
-//
+// 添加行, offset一定比上个offset大，但一定比文件大小小
 func (f *File) AddLine(offset int) {
 	f.mutex.Lock()
 	if i := len(f.lines); (i == 0 || f.lines[i-1] < offset) && offset < f.size {
@@ -142,6 +148,7 @@ func (f *File) AddLine(offset int) {
 // remaining offsets). To obtain the line number, consult e.g. Position.Line.
 // MergeLine will panic if given an invalid line number.
 //
+// 合并行
 func (f *File) MergeLine(line int) {
 	if line <= 0 {
 		panic("illegal line number (line numbering starts at 1)")
@@ -169,6 +176,7 @@ func (f *File) MergeLine(line int) {
 // false.
 // Callers must not mutate the provided slice after SetLines returns.
 //
+// 设置行
 func (f *File) SetLines(lines []int) bool {
 	// verify validity of lines table
 	size := f.size
@@ -187,6 +195,7 @@ func (f *File) SetLines(lines []int) bool {
 
 // SetLinesForContent sets the line offsets for the given file content.
 // It ignores position-altering //line comments.
+// 设置内容
 func (f *File) SetLinesForContent(content []byte) {
 	var lines []int
 	line := 0
@@ -246,7 +255,7 @@ func (f *File) Pos(offset int) Pos {
 // Offset returns the offset for the given file position p;
 // p must be a valid Pos value in that file.
 // f.Offset(f.Pos(offset)) == offset.
-//
+// 获取offset
 func (f *File) Offset(p Pos) int {
 	if int(p) < f.base || int(p) > f.base+f.size {
 		panic("illegal Pos value")
@@ -256,7 +265,7 @@ func (f *File) Offset(p Pos) int {
 
 // Line returns the line number for the given file position p;
 // p must be a Pos value in that file or NoPos.
-//
+// 根据P获取行
 func (f *File) Line(p Pos) int {
 	return f.Position(p).Line
 }
@@ -268,7 +277,7 @@ func searchLineInfos(a []lineInfo, x int) int {
 // unpack returns the filename and line and column number for a file offset.
 // If adjusted is set, unpack will return the filename and line information
 // possibly adjusted by //line comments; otherwise those comments are ignored.
-//
+// 解压
 func (f *File) unpack(offset int, adjusted bool) (filename string, line, column int) {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -366,6 +375,7 @@ func (s *FileSet) Base() int {
 // For convenience, File.Pos may be used to create file-specific position
 // values from a file offset.
 //
+// 添加文件
 func (s *FileSet) AddFile(filename string, base, size int) *File {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
