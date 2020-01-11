@@ -18,11 +18,12 @@ import (
 )
 
 // An Importer provides the context for importing packages from source code.
+// 从源码导入包
 type Importer struct {
-	ctxt     *build.Context
-	fset     *token.FileSet
-	sizes    types.Sizes
-	packages map[string]*types.Package
+	ctxt     *build.Context            // 构建上下文
+	fset     *token.FileSet            // 文件集合
+	sizes    types.Sizes               // 大小
+	packages map[string]*types.Package // 包
 }
 
 // NewImporter returns a new Importer for the given context, file set, and map
@@ -31,6 +32,7 @@ type Importer struct {
 // non-nil file system functions, they are used instead of the regular package
 // os functions. The file set is used to track position information of package
 // files; and imported packages are added to the packages map.
+// 创建一个新的
 func New(ctxt *build.Context, fset *token.FileSet, packages map[string]*types.Package) *Importer {
 	return &Importer{
 		ctxt:     ctxt,
@@ -55,6 +57,7 @@ func (p *Importer) Import(path string) (*types.Package, error) {
 // maintained with the importer. The import mode must be zero but is otherwise ignored.
 // Packages that are not comprised entirely of pure Go files may fail to import because the
 // type checker may not be able to determine all exported entities (e.g. due to cgo dependencies).
+// 从源码导入
 func (p *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*types.Package, error) {
 	if mode != 0 {
 		panic("non-zero import mode")
@@ -81,15 +84,17 @@ func (p *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 		return nil, err // err may be *build.NoGoError - return as is
 	}
 
+	// unsafe包特殊处理
 	// package unsafe is known to the type checker
 	if bp.ImportPath == "unsafe" {
 		return types.Unsafe, nil
 	}
 
 	// no need to re-import if the package was imported completely before
+	// 如果包有导过
 	pkg := p.packages[bp.ImportPath]
 	if pkg != nil {
-		if pkg == &importing {
+		if pkg == &importing { // 判断是否为当前包，如果是就返回循环应用
 			return nil, fmt.Errorf("import cycle through package %q", bp.ImportPath)
 		}
 		if !pkg.Complete() {
@@ -134,6 +139,7 @@ func (p *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 		Importer:         p,
 		Sizes:            p.sizes,
 	}
+	// 检测
 	pkg, err = conf.Check(bp.ImportPath, p.fset, files, nil)
 	if err != nil {
 		// Type-checking stops after the first error (types.Config.Error is not set),
@@ -147,6 +153,7 @@ func (p *Importer) ImportFrom(path, srcDir string, mode types.ImportMode) (*type
 	return pkg, nil
 }
 
+// 解析文件
 func (p *Importer) parseFiles(dir string, filenames []string) ([]*ast.File, error) {
 	open := p.ctxt.OpenFile // possibly nil
 
@@ -164,6 +171,7 @@ func (p *Importer) parseFiles(dir string, filenames []string) ([]*ast.File, erro
 					errors[i] = fmt.Errorf("opening package file %s failed (%v)", filepath, err)
 					return
 				}
+				// 解析文件
 				files[i], errors[i] = parser.ParseFile(p.fset, filepath, src, 0)
 				src.Close() // ignore Close error - parsing may have succeeded which is all we need
 			} else {
@@ -189,13 +197,14 @@ func (p *Importer) parseFiles(dir string, filenames []string) ([]*ast.File, erro
 }
 
 // context-controlled file system operations
-
+// 返回路径的绝对路径
 func (p *Importer) absPath(path string) (string, error) {
 	// TODO(gri) This should be using p.ctxt.AbsPath which doesn't
 	// exist but probably should. See also issue #14282.
 	return filepath.Abs(path)
 }
 
+// 判读是否为绝对路径
 func (p *Importer) isAbsPath(path string) bool {
 	if f := p.ctxt.IsAbsPath; f != nil {
 		return f(path)
@@ -203,6 +212,7 @@ func (p *Importer) isAbsPath(path string) bool {
 	return filepath.IsAbs(path)
 }
 
+// 加入路径
 func (p *Importer) joinPath(elem ...string) string {
 	if f := p.ctxt.JoinPath; f != nil {
 		return f(elem...)

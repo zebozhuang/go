@@ -17,6 +17,7 @@ import (
 	"text/scanner"
 )
 
+// 导入
 type parser struct {
 	scanner  scanner.Scanner
 	version  string                    // format version
