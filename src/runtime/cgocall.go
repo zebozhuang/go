@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// Cgo调用和回调支持
 // Cgo call and callback support.
 //
 // To call into the C function f from Go, the cgo-generated code calls
@@ -87,8 +88,10 @@ import (
 
 // Addresses collected in a cgo backtrace when crashing.
 // Length must match arg.Max in x_cgo_callers in runtime/cgo/gcc_traceback.c.
+// cgo调用者
 type cgoCallers [32]uintptr
 
+// 调用
 // Call from Go to C.
 //go:nosplit
 func cgocall(fn, arg unsafe.Pointer) int32 {
@@ -130,7 +133,7 @@ func cgocall(fn, arg unsafe.Pointer) int32 {
 	// and then re-enter the "system call" reusing the PC and SP
 	// saved by entersyscall here.
 	entersyscall(0)
-	errno := asmcgocall(fn, arg)
+	errno := asmcgocall(fn, arg) // 调用
 	exitsyscall(0)
 
 	// From the garbage collector's perspective, time can move
@@ -163,6 +166,7 @@ func endcgo(mp *m) {
 }
 
 // Call from C back to Go.
+// 返回go
 //go:nosplit
 func cgocallbackg(ctxt uintptr) {
 	gp := getg()
