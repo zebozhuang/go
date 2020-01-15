@@ -4,6 +4,7 @@
 
 package runtime
 
+// channel实现
 // This file contains the implementation of Go channels.
 
 // Invariants:
@@ -28,17 +29,18 @@ const (
 	debugChan = false
 )
 
+// hchan结构
 type hchan struct {
-	qcount   uint           // total data in the queue
-	dataqsiz uint           // size of the circular queue
-	buf      unsafe.Pointer // points to an array of dataqsiz elements
+	qcount   uint           // total data in the queue 队列数据
+	dataqsiz uint           // size of the circular queue // 当前队列的带澳
+	buf      unsafe.Pointer // points to an array of dataqsiz elements // 指针
 	elemsize uint16
-	closed   uint32
-	elemtype *_type // element type
-	sendx    uint   // send index
-	recvx    uint   // receive index
-	recvq    waitq  // list of recv waiters
-	sendq    waitq  // list of send waiters
+	closed   uint32			// 是否关闭
+	elemtype *_type // element type  元素类型
+	sendx    uint   // send index  // 发送索引
+	recvx    uint   // receive index // 发送索引
+	recvq    waitq  // list of recv waiters // 接受者
+	sendq    waitq  // list of send waiters // 发送者
 
 	// lock protects all fields in hchan, as well as several
 	// fields in sudogs blocked on this channel.
