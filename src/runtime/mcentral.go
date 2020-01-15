@@ -38,6 +38,7 @@ func (c *mcentral) init(spc spanClass) {
 	c.empty.init()
 }
 
+// 在Mcache申请内存
 // Allocate a span to use in an MCache.
 func (c *mcentral) cacheSpan() *mspan {
 	// Deduct credit for this span allocation and sweep if necessary.
@@ -150,6 +151,7 @@ havespan:
 	return s
 }
 
+// 返回内存
 // Return span from an MCache.
 func (c *mcentral) uncacheSpan(s *mspan) {
 	lock(&c.lock)
@@ -176,6 +178,7 @@ func (c *mcentral) uncacheSpan(s *mspan) {
 	unlock(&c.lock)
 }
 
+// 释放内存
 // freeSpan updates c and s after sweeping s.
 // It sets s's sweepgen to the latest generation,
 // and, based on the number of free objects in s,
