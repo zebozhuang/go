@@ -861,6 +861,7 @@ type (
 
 	// An ImportSpec node represents a single package import.
 	// import Spec
+	// 导入
 	ImportSpec struct {
 		Doc     *CommentGroup // associated documentation; or nil
 		Name    *Ident        // local package name (including "."); or nil
@@ -871,7 +872,7 @@ type (
 
 	// A ValueSpec node represents a constant or variable declaration
 	// (ConstSpec or VarSpec production).
-	//
+	// 声明变量 var
 	ValueSpec struct {
 		Doc     *CommentGroup // associated documentation; or nil
 		Names   []*Ident      // value names (len(Names) > 0)
@@ -881,6 +882,7 @@ type (
 	}
 
 	// A TypeSpec node represents a type declaration (TypeSpec production).
+	// 类型声明
 	TypeSpec struct {
 		Doc     *CommentGroup // associated documentation; or nil
 		Name    *Ident        // type name
